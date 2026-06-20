@@ -1,9 +1,9 @@
 import argparse
+import platform
 import select
 import socket
-import typing
 import sys
-import platform
+import typing
 
 # === Do Not Modify ===
 
@@ -64,8 +64,7 @@ class Socket:
     # code calls this for you.
     @classmethod
     def make_udp(cls):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM,
-                             socket.IPPROTO_UDP)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         return cls(sock)
 
     # Creates an ICMP socket used for receiving ICMP responses. The starter
@@ -73,8 +72,7 @@ class Socket:
     @classmethod
     def make_icmp(cls):
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_RAW,
-                                 socket.IPPROTO_ICMP)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
         except PermissionError:
             if platform.system() != "Darwin":
                 print("PermissionError: please run as root.")
@@ -83,8 +81,7 @@ class Socket:
             # On MacOS, you can create a non-privileged ICMP socket.  The raw
             # socket is preferable as it's less fragile and cross platform, but
             # since that failed, may as well try it.
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM,
-                                 socket.IPPROTO_ICMP)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_ICMP)
         return cls(sock)
 
     def __init__(self, sock: socket.socket):
@@ -143,6 +140,6 @@ def print_result(routers: list[str], ttl: int):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog='cs168 Traceroute')
-    parser.add_argument('host')
+    parser = argparse.ArgumentParser(prog="cs168 Traceroute")
+    parser.add_argument("host")
     return parser.parse_args()
