@@ -38,8 +38,42 @@ class IPv4:
     src: str
     dst: str
 
+    FIELD_TO_LENGTH = {
+        "version": 4,
+        "header_len": 4,
+        "tos": 8,
+        "length": 16,
+        "id": 16,
+        "flags": 3,
+        "frag_offset": 13,
+        "ttl": 8,
+        "proto": 8,
+        "cksum": 16,
+    }
+    MIN_LENGTH = (sum(FIELD_TO_LENGTH.values()) + 32 + 32) // 8
+
     def __init__(self, buffer: bytes):
-        pass  # TODO
+        if len(buffer) < self.MIN_LENGTH:
+            raise ValueError(
+                f"cannot parse IPv4 header from buffer = {buffer.hex()}: required fields are missing / incomplete"
+            )
+
+        bits = "".join(format(byte, "08b") for byte in [*buffer])
+        for field, length in self.FIELD_TO_LENGTH.items():
+            setattr(self, field, int(bits[:length], 2))
+            bits = bits[length:]
+
+        self.header_len *= 4
+
+        if len(buffer) < self.header_len:
+            raise ValueError(
+                f"cannot parse IPv4 header from buffer = {buffer.hex()}: Options field is missing / incomplete"
+            )
+
+        self.src = f"{int(bits[:8], 2)}.{int(bits[8:16], 2)}.{int(bits[16:24], 2)}.{int(bits[24:32], 2)}"
+        bits = bits[32:]
+        self.dst = f"{int(bits[:8], 2)}.{int(bits[8:16], 2)}.{int(bits[16:24], 2)}.{int(bits[24:32], 2)}"
+        bits = bits[32:]
 
     def __str__(self) -> str:
         return (
@@ -62,8 +96,23 @@ class ICMP:
     code: int
     cksum: int
 
+    FIELD_TO_LENGTH = {
+        "type": 8,
+        "code": 8,
+        "cksum": 16,
+    }
+    TOTAL_LENGTH = sum(FIELD_TO_LENGTH.values()) // 8
+
     def __init__(self, buffer: bytes):
-        pass  # TODO
+        if len(buffer) < self.TOTAL_LENGTH:
+            raise ValueError(
+                f"cannot parse ICMP header from buffer = {buffer.hex()}: required fields are missing / incomplete"
+            )
+
+        bits = "".join(format(byte, "08b") for byte in [*buffer])
+        for field, length in self.FIELD_TO_LENGTH.items():
+            setattr(self, field, int(bits[:length], 2))
+            bits = bits[length:]
 
     def __str__(self) -> str:
         return (
@@ -82,8 +131,24 @@ class UDP:
     len: int
     cksum: int
 
+    FIELD_TO_LENGTH = {
+        "src_port": 16,
+        "dst_port": 16,
+        "len": 16,
+        "cksum": 16,
+    }
+    TOTAL_LENGTH = sum(FIELD_TO_LENGTH.values()) // 8
+
     def __init__(self, buffer: bytes):
-        pass  # TODO
+        if len(buffer) < self.TOTAL_LENGTH:
+            raise ValueError(
+                f"cannot parse UDP header from buffer = {buffer.hex()}: required fields are missing / incomplete"
+            )
+
+        bits = "".join(format(byte, "08b") for byte in [*buffer])
+        for field, length in self.FIELD_TO_LENGTH.items():
+            setattr(self, field, int(bits[:length], 2))
+            bits = bits[length:]
 
     def __str__(self) -> str:
         return (
